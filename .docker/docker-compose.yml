@@ -1,0 +1,25 @@
+version: '3.5'
+
+services:
+  scrutiny:
+    container_name: scrutiny
+    image: ghcr.io/analogj/scrutiny:master-omnibus
+    environment:
+      - TZ=${TIMEZONE}
+      - COLLECTOR_CRON_SCHEDULE="${COLLECTOR_CRON_SCHEDULE}"
+    cap_add:
+      - SYS_RAWIO
+      - SYS_ADMIN #optional, for nvme support
+    ports:
+      - "${WEBAPP_POST_8080}:8080" # webapp
+      - "${INFLUXDB_POST_8086}:8086" # influxDB admin
+    volumes:
+      - /run/udev:/run/udev:ro
+      - ../app/config:/opt/scrutiny/config
+      - ../app/influxdb:/opt/scrutiny/influxdb
+    devices: # lsblk
+      - "/dev/sda"
+      - "/dev/sdb"
+      - "/dev/sdc"
+      - "/dev/nvme0n1"
+    restart: unless-stopped
